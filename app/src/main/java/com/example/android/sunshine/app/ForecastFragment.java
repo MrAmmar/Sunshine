@@ -96,7 +96,11 @@ public class ForecastFragment extends Fragment {
                 // Construct the URL for the OpenWeatherMap query
                 // Possible parameters are avaiable at OWM's forecast API page, at
                 // http://openweathermap.org/API#forecast
-                URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7");
+
+                // Recently , getting Data from openweathermap.org requires an API key
+                String baseUrl = "http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7";
+                String APIKey = "&APPID=" + BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+                URL url = new URL(baseUrl.concat(APIKey));
 
                 // Create the request to OpenWeatherMap, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -125,6 +129,8 @@ public class ForecastFragment extends Fragment {
                     return null;
                 }
                 forecastJsonStr = buffer.toString();
+
+                Log.v(LOG_TAG,"Forecast JSON String" + forecastJsonStr);
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
                 // If the code didn't successfully get the weather data, there's no point in attemping
