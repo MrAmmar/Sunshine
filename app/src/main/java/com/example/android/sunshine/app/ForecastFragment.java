@@ -173,10 +173,6 @@ public class ForecastFragment extends Fragment {
                 resultStr[i] = day + " - " + description + " - " + hignAndLow;
             }
 
-            for (String s : resultStr){
-                Log.v(LOG_TAG,"Forecasr entry :" + s);
-            }
-
             return resultStr;
         }
 
@@ -208,7 +204,6 @@ public class ForecastFragment extends Fragment {
                 builder.appendQueryParameter("units","metric");
                 builder.appendQueryParameter("cnt","7");
                 builder.appendQueryParameter("APPID",BuildConfig.OPEN_WEATHER_MAP_API_KEY);
-                Log.v(LOG_TAG,builder.build().toString());
                 // Recently , getting Data from openweathermap.org requires an API key
                 URL url = new URL(builder.build().toString());
 
@@ -239,8 +234,6 @@ public class ForecastFragment extends Fragment {
                     return null;
                 }
                 forecastJsonStr = buffer.toString();
-
-                Log.v(LOG_TAG, "Forecast JSON String" + forecastJsonStr);
 
                 return getWeatherDataFromJson(forecastJsonStr,7);
             } catch (IOException e) {
