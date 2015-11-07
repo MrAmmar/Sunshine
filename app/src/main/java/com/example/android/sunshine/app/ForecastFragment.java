@@ -1,8 +1,10 @@
 package com.example.android.sunshine.app;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -13,12 +15,17 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,8 +34,10 @@ import java.util.List;
  * A placeholder fragment containing a simple view.
  */
 public class ForecastFragment extends Fragment {
+    private final String LOG_TAG = ForecastFragment.class.getSimpleName();
 
     private ArrayList<String> forecast_array;
+    private ArrayAdapter<String> mForecastAdapter;
 
     public ForecastFragment() {
     }
@@ -59,14 +68,14 @@ public class ForecastFragment extends Fragment {
         /**
          * Creating ArrayAdapter
          */
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
+        mForecastAdapter = new ArrayAdapter<String>(getActivity(),
                 R.layout.list_item_forecast, R.id.list_item_forecast_txtview,weekForecast);
 
         /**
          * Initializing listForecast ListView and setting its adapter
          */
         ListView listForecast = (ListView)rootView.findViewById(R.id.listview_forecast);
-        listForecast.setAdapter(adapter);
+        listForecast.setAdapter(mForecastAdapter);
 
 
         return rootView;
@@ -78,12 +87,101 @@ public class ForecastFragment extends Fragment {
      * Create FetchWeatherTask
      */
 
-    public class FetchWeatherTask extends AsyncTask<Void, Void, Void> {
+    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
         private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
 
+        private String getReadableDateString(long time){
+            /**
+             * date/time converter
+             */
+            SimpleDateFormat shortDateFormat = new SimpleDateFormat("EEE mm dd");
+            return shortDateFormat.format(time);
+        }
+
+        private String formatHighLows (double high, double low){
+            /**
+             * Rounding tha min /max , usually the user doesn't care
+             * about the tenths of a degree  14.6 => 14
+             */
+            long roundedHign = Math.round(high);
+            long roundedLow = Math.round(low);
+
+            String highlowStr = roundedHign + "/" + roundedLow;
+            return highlowStr;
+        }
+
+        private String[] getWeatherDataFromJson(String forecastStr , int numDays)
+                throws JSONException{
+
+            // These are the names of the JSON objects that need to be extracted.
+            String OWM_LIST = "list";
+            String OWM_WEATHER = "weather";
+            String OWM_TEMPERATURE = "temp";
+            String OWM_MAX = "max";
+            String OWM_MIN = "min";
+            String OWM_DESCRIPTION = "main";
+
+            JSONObject forecastJson = new JSONObject(forecastStr);
+            JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
+            /**
+             *
+             */
+            Time dayTime = new Time();
+            dayTime.setToNow();
+
+            //Setting the start date
+            int julianStartDay = Time.getJulianDay(System.currentTimeMillis(),dayTime.gmtoff);
+
+            //We initialize dayTime after using it
+            dayTime = new Time();
+
+            String[] resultStr = new String[numDays];
+            for (int i = 0 ; i<weatherArray.length() ; i++ ){
+
+                /**
+                 * The final String structure
+                 */
+                String day,description,hignAndLow;
+
+                //Get the Json object representing the day
+                JSONObject dayForecast = weatherArray.getJSONObject(i);
+
+                /**
+                 * The date/time is returned as a long.  We need to convert that
+                 * into something human-readable, since most people won't read "1400356800" as
+                 * "this saturday".
+                 */
+
+                long dateTime;
+
+                dateTime = dayTime.setJulianDay(julianStartDay + i);
+                day = getReadableDateString(dateTime);
+
+                // description is in a child array called "weather", which is 1 element long.
+                JSONObject weatherObject = dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
+                description = weatherObject.getString(OWM_DESCRIPTION);
+
+                // Temperatures are in a child object called "temp".  Try not to name variables
+                // "temp" when working with temperature.  It confuses everybody.
+                JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
+                double high = temperatureObject.getDouble(OWM_MAX);
+                double low = temperatureObject.getDouble(OWM_MIN);
+
+                hignAndLow = formatHighLows(high,low);
+
+                resultStr[i] = day + " - " + description + " - " + hignAndLow;
+            }
+
+            for (String s : resultStr){
+                Log.v(LOG_TAG,"Forecasr entry :" + s);
+            }
+
+            return resultStr;
+        }
+
         @Override
-        protected Void doInBackground(Void... params) {
+        protected String[] doInBackground(String ... params) {
             // These two need to be declared outside the try/catch
             // so that they can be closed in the finally block.
             HttpURLConnection urlConnection = null;
@@ -97,10 +195,22 @@ public class ForecastFragment extends Fragment {
                 // Possible parameters are avaiable at OWM's forecast API page, at
                 // http://openweathermap.org/API#forecast
 
+                //Making the URL more flexible by using the Uri.Buidler
+                Uri.Builder builder = new Uri.Builder();
+                builder.scheme("http");
+                builder.authority("api.openweathermap.org");
+                builder.appendPath("data");
+                builder.appendPath("2.5");
+                builder.appendPath("forecast");
+                builder.appendPath("daily");
+                builder.appendQueryParameter("q", params[0]);
+                builder.appendQueryParameter("mode", "json");
+                builder.appendQueryParameter("units","metric");
+                builder.appendQueryParameter("cnt","7");
+                builder.appendQueryParameter("APPID",BuildConfig.OPEN_WEATHER_MAP_API_KEY);
+                Log.v(LOG_TAG,builder.build().toString());
                 // Recently , getting Data from openweathermap.org requires an API key
-                String baseUrl = "http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7";
-                String APIKey = "&APPID=" + BuildConfig.OPEN_WEATHER_MAP_API_KEY;
-                URL url = new URL(baseUrl.concat(APIKey));
+                URL url = new URL(builder.build().toString());
 
                 // Create the request to OpenWeatherMap, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -130,12 +240,16 @@ public class ForecastFragment extends Fragment {
                 }
                 forecastJsonStr = buffer.toString();
 
-                Log.v(LOG_TAG,"Forecast JSON String" + forecastJsonStr);
+                Log.v(LOG_TAG, "Forecast JSON String" + forecastJsonStr);
+
+                return getWeatherDataFromJson(forecastJsonStr,7);
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
                 // If the code didn't successfully get the weather data, there's no point in attemping
                 // to parse it.
                 return null;
+            } catch (JSONException e) {
+                e.printStackTrace();
             } finally {
                 if (urlConnection != null) {
                     urlConnection.disconnect();
@@ -149,6 +263,16 @@ public class ForecastFragment extends Fragment {
                 }
             }
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(String[] strings) {
+            if(strings != null){
+                mForecastAdapter.clear();
+                for(String dayForecastStr : strings){
+                    mForecastAdapter.add(dayForecastStr);
+                }
+            }
         }
     }
 
@@ -164,7 +288,7 @@ public class ForecastFragment extends Fragment {
         switch(item.getItemId()){
 
             case R.id.action_ref:
-                new FetchWeatherTask().execute();
+                new FetchWeatherTask().execute("94043");
         }
 
         return super.onOptionsItemSelected(item);
