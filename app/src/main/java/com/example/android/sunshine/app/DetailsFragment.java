@@ -12,6 +12,7 @@ import android.widget.TextView;
  * A placeholder fragment containing a simple view.
  */
 public class DetailsFragment extends Fragment {
+    private final String LOG_TAG = DetailsFragment.class.getSimpleName();
 
     public DetailsFragment() {
     }
