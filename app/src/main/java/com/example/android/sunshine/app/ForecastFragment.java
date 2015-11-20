@@ -284,17 +284,18 @@ public class ForecastFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+
         inflater.inflate(R.menu.forecastfragment,menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-
         switch(item.getItemId()){
 
             case R.id.action_ref:
                 new FetchWeatherTask().execute("94043");
+                break;
         }
 
         return super.onOptionsItemSelected(item);
