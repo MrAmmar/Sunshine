@@ -1,9 +1,11 @@
 package com.example.android.sunshine.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.format.Time;
 import android.util.Log;
@@ -29,14 +31,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * A placeholder fragment containing a simple view.
  */
 public class ForecastFragment extends Fragment {
     private final String LOG_TAG = ForecastFragment.class.getSimpleName();
+    public static final String PREF_NAME = "location";
 
     private ArrayList<String> forecast_array;
     private ArrayAdapter<String> mForecastAdapter;
@@ -52,26 +53,21 @@ public class ForecastFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main,container,false);
-        String[] forecastArray = {
-                "Today - Clear - 27/23",
-                "Tomorrow - Foggy - 23/16",
-                "Saturday - Foggy - 22/16",
-                "Sunday - Rainy - 13/13"
-        };
-
-        /**
-         * Create some fake data to display
-         */
-        List<String> weekForecast = new ArrayList<String>(Arrays.asList(forecastArray));
 
         /**
          * Creating ArrayAdapter
          */
         mForecastAdapter = new ArrayAdapter<String>(getActivity(),
-                R.layout.list_item_forecast, R.id.list_item_forecast_txtview,weekForecast);
+                R.layout.list_item_forecast, R.id.list_item_forecast_txtview, new ArrayList<String>());
 
         /**
          * Initializing listForecast ListView and setting its adapter
@@ -294,10 +290,19 @@ public class ForecastFragment extends Fragment {
         switch(item.getItemId()){
 
             case R.id.action_ref:
-                new FetchWeatherTask().execute("94043");
-                break;
+
+                updateWeather();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void updateWeather(){
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String location = sharedPreferences.getString(getString(R.string.pref_location_key),
+                getString(R.string.pref_location_default));
+        new FetchWeatherTask().execute(location);
     }
 }

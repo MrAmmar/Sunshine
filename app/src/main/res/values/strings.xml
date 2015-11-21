@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">Sunshine</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- DetailsActivity -->
+    <string name="title_activity_display_details" >DetailsActivity</string>
+
+    <!-- Main Fragment -->
+    <string name="forecast_date_txt">Today, October 29</string>
+    <string name="forecast_max_temp_txt">21 °</string>
+    <string name="forecast_min_temp_txt">8°</string>
+
+    <!-- Forecast List Item -->
+    <string name="forecast_list_item_txt">Today -Sunny- 88/63</string>
+
+    <!-- Forecast Menu -->
+    <string name="forecast_menu_action_refresh" translatable="false">Refresh</string>
+
+    <!-- SettingsActivity -->
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <!-- Preferences -->
+        <!-- pref_location -->
+        <string name="pref_location_label">Location</string>
+
+        <!-- pref_key -->
+        <string name="pref_location_key" translatable="false" >location</string>
+
+        <!-- pref_defaultvalue -->
+        <string name="pref_location_default" translatable="false">94043</string>
+</resources>
