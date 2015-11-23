@@ -23,10 +23,30 @@
     <!-- Preferences -->
         <!-- pref_location -->
         <string name="pref_location_label">Location</string>
-
         <!-- pref_key -->
         <string name="pref_location_key" translatable="false" >location</string>
-
         <!-- pref_defaultvalue -->
         <string name="pref_location_default" translatable="false">94043</string>
+
+        <!-- pref_temperature -->
+        <string name="pref_temperature_label">Temperature</string>
+        <!-- pref_key -->
+        <string name="pref_temperature_key" translatable="false">temperature</string>
+        <!-- pref_defaultvalue -->
+        <string name="pref_temperature_default" translatable="false">metric</string>
+
+        <!-- temperature entries -->
+        <string-array
+            name="pref_temperature_entries">
+            <item>Metric</item>
+            <item>Imperial</item>
+        </string-array>
+        <!-- temperature entryvalues -->
+        <string-array
+            name="pref_temperature_entryvalues">
+            <item>metric</item>
+            <item>imperial</item>
+        </string-array>
+        <!-- dialog title -->
+        <string name="pref_temperature_dialogtitle">Pick your unit</string>
 </resources>

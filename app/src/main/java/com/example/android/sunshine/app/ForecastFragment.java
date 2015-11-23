@@ -210,7 +210,7 @@ public class ForecastFragment extends Fragment {
                 builder.appendPath("daily");
                 builder.appendQueryParameter("q", params[0]);
                 builder.appendQueryParameter("mode", "json");
-                builder.appendQueryParameter("units","metric");
+                builder.appendQueryParameter("units",params[1]);
                 builder.appendQueryParameter("cnt","7");
                 builder.appendQueryParameter("APPID",BuildConfig.OPEN_WEATHER_MAP_API_KEY);
                 // Recently , getting Data from openweathermap.org requires an API key
@@ -303,6 +303,8 @@ public class ForecastFragment extends Fragment {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String location = sharedPreferences.getString(getString(R.string.pref_location_key),
                 getString(R.string.pref_location_default));
-        new FetchWeatherTask().execute(location);
+        String temperature = sharedPreferences.getString(getString(R.string.pref_temperature_key),
+                getString(R.string.pref_temperature_default));
+        new FetchWeatherTask().execute(location, temperature);
     }
 }
