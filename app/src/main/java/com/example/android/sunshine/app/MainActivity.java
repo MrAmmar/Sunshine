@@ -85,6 +85,5 @@ public class MainActivity extends AppCompatActivity {
             Log.d(LOG_TAG,onFailMsg);
             Toast.makeText(this,onFailMsg,Toast.LENGTH_SHORT).show();
         }
-
     }
 }
